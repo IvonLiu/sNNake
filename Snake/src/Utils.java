@@ -1,9 +1,13 @@
 import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Owner on 3/14/2016.
@@ -84,17 +88,25 @@ public class Utils {
     }
 
     public static void exportExamples() {
+
         System.out.println("Exporting examples");
 
+        Path workingDir = Paths.get("");
+        Path parentDir = workingDir.toAbsolutePath().getParent();
+        Path trainingDir = parentDir.resolve("TrainingData");
+        Path outfilePath = trainingDir.resolve(SAVE_FILE_PREFIX+System.currentTimeMillis()+".csv");
+
+        List<String> lines = examples.stream().map(Example::toCSV).collect(Collectors.toList());
+
         try {
-            PrintWriter writer = new PrintWriter(SAVE_FILE_PREFIX+System.currentTimeMillis()+".csv", "UTF-8");
-            for (Example e : examples) {
-                writer.println(e.toCSV());
-            }
-            writer.close();
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            File outfile = outfilePath.toFile();
+            System.out.println(outfilePath.toString());
+            outfile.createNewFile();
+            Files.write(outfilePath, lines, Charset.forName("UTF-8"));
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
 }
