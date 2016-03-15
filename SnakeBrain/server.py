@@ -1,7 +1,17 @@
 import numpy as np
 import math
 import neuralnetwork as nn
+from flask import Flask
+from flask import request
+from flask import jsonify
 
+
+app = Flask(__name__)
+
+
+####################################
+########## Helper methods ##########
+####################################
 
 def generateTrainingSet(n, xMin, xMax, yMax, maxNoise):
     X = np.random.randint(xMin, high=xMax + 1, size=[n, 2])
@@ -41,6 +51,25 @@ def printResults(X, yHat, xNorm, yNorm):
         ))
 
 
+###########################################
+########## Initialize neural net ##########
+###########################################
+
+# Hyperparameters
+inputLayerSize = 2
+outputLayerSize = 1
+hiddenLayerSize = [3, 3]
+
+# Regularization
+lambd = 0.0001
+
+# Configure activation function
+useAct = "softRelu"
+xNorm = [50, 50]
+yNorm = 50
+
+net = nn.NeuralNetwork(inputLayerSize, outputLayerSize, hiddenLayerSize, lambd, useAct)
+
 # Generate Training Set For Multiplication with (Soft) ReLU
 
 # Training set generation parameters
@@ -53,44 +82,23 @@ xMax = math.floor((yMax - maxNoise) ** 0.5)
 
 X, y = generateTrainingSet(n, xMin, xMax, yMax, maxNoise)
 
-# (Soft) ReLU only requires values to be scaled down to maintain precision
-# useAct = "relu"
-useAct = "softRelu"
-
-xNorm = [50, 50]
-yNorm = 50
 X = X / xNorm
 y = y / yNorm
 
-# Hyperparameters
-inputLayerSize = 2
-outputLayerSize = 1
-hiddenLayerSize = [3, 3]
-
-# Regularization
-lambd = 0.0001
-
-# net = NeuralNetwork(inputLayerSize, outputLayerSize, hiddenLayerSize[0]);
-# net = GoDeeper(inputLayerSize, outputLayerSize, hiddenLayerSize[0], hiddenLayerSize[1])
-net = nn.NeuralNetwork(inputLayerSize, outputLayerSize, hiddenLayerSize, lambd, useAct)
-
-# Training set
-print("\nTraining set:")
-printResults(X, y, xNorm, yNorm)
-
-yHat = net.forward(X)
-print("\nBefore training:")
-printResults(X, yHat, xNorm, yNorm)
-
-print("")
 train(net, X, y)
 
-yHat = net.forward(X)
-print("\nAfter training:")
-printResults(X, yHat, xNorm, yNorm)
 
-xTest = np.array(([21, 27], [31, 0], [14, 16], [16, 14], [3, 6], [9, 9]), dtype=float)
-xTest = xTest / xNorm
-yHatTest = net.forward(xTest)
-print("\nTest set:")
-printResults(xTest, yHatTest, xNorm, yNorm)
+#########################################
+########## Route configuration ##########
+#########################################
+
+@app.route("/forward", methods=['POST'])
+def forward():
+    json = request.get_json()
+    X = np.array(json['X'], dtype=float)
+    X = X / xNorm
+    yHat = net.forward(X) * yNorm
+    return jsonify({'yHat': yHat.tolist()})
+
+if __name__ == "__main__":
+    app.run(debug=True)

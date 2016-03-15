@@ -1,3 +1,10 @@
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -8,6 +15,8 @@ import java.util.Arrays;
 
 @SuppressWarnings("serial")
 public class Snake extends JPanel implements ActionListener{
+
+    public static final String SERVER_URL = "http://127.0.0.1:5000";
 
     //variables for Window
     private final static int W_HEIGHT = 700;
@@ -130,14 +139,20 @@ public class Snake extends JPanel implements ActionListener{
                 }
             }
 
+            // Test server connection
+            testServerConnection();
+
             // For auto-forward games
-            //Thread.sleep(DELAY);
+            Thread.sleep(DELAY);
 
             // For manual-move games
-            isWaitingForInput = true;
+            /*isWaitingForInput = true;
             while(gameCont && isWaitingForInput) {
                 Thread.sleep(DELAY);
-            }
+            }*/
+
+            // For AI-move games
+
         }
 
         // Save training examples
@@ -147,6 +162,32 @@ public class Snake extends JPanel implements ActionListener{
         snake.repaint();
     }
 
+    private static int[][] testX = new int[][] {
+            {21, 27},
+            {31, 0},
+            {14, 16},
+            {16, 14},
+            {3, 6},
+            {9, 9}
+    };
+
+    private static void testServerConnection() {
+
+        try {
+
+            HttpResponse<JsonNode> jsonResponse = Unirest.post(SERVER_URL + "/forward")
+                    .header("content-type", "application/json")
+                    .body("{\"X\": " + Utils.toJsonString(testX) + "}")
+                    .asJson();
+            JsonNode node = jsonResponse.getBody();
+            JSONObject root = node.getObject();
+            JSONArray jsonArray = root.getJSONArray("yHat");
+            double[][] yHat = Utils.toMatrix(jsonArray);
+
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+    }
 
     private static void makeSnake() {
         // TODO Auto-generated method stub

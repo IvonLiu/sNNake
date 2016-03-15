@@ -1,3 +1,5 @@
+import org.json.JSONArray;
+
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -6,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -107,6 +110,43 @@ public class Utils {
             e.printStackTrace();
         }
 
+    }
+
+    public static String toJsonString(int[][] x) {
+        return new JSONArray(Arrays.asList(x)).toString();
+    }
+
+    public static double[][] toMatrix(JSONArray y) {
+        double[][] matrix = new double[y.length()][y.getJSONArray(0).length()];
+        for (int i=0; i<matrix.length; i++) {
+            for (int j=0; j<matrix[i].length; j++) {
+                matrix[i][j] = y.getJSONArray(i).getDouble(j);
+            }
+        }
+        return matrix;
+    }
+
+    public static String matrixToString(double[][] matrix) {
+
+        int numRows = matrix.length;
+        int numCols = matrix[0].length;
+
+        String s = "";
+        for (int i=0; i<numRows; i++) {
+            String row = "|";
+            for (int j=0; j<numCols; j++) {
+                row += String.format("%10.2f", matrix[i][j]);
+                if (j != numCols-1) {
+                    row += " ";
+                }
+            }
+            row += "|";
+            if (i != numRows-1) {
+                row += "\n";
+            }
+            s += row;
+        }
+        return s + "\n";
     }
 
 }
