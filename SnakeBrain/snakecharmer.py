@@ -41,7 +41,7 @@ with open('../TrainingData/active/examples.csv', 'r') as f:
     reader = csv.reader(f)
     examples = np.array(list(reader), dtype=float)
 
-X = examples[:, :7]
+X = examples[:, :12]
 y = examples[:, -3:]
 
 # Hyperparameters
