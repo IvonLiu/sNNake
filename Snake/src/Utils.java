@@ -21,13 +21,11 @@ public class Utils {
 
     private static List<Example> examples = new ArrayList<>();
 
-    public static void addExample(int positions, int blockSize, int appleX, int appleY,
-                                  int[] snakeX, int[] snakeY, int snakeLen,
-                                  boolean up, boolean right, boolean down, boolean left,
-                                  int action) {
+    public static int[] generateInput(int positions, int blockSize, int appleX, int appleY,
+                                      int[] snakeX, int[] snakeY, int snakeLen,
+                                      boolean up, boolean right, boolean down, boolean left) {
 
         int[] input = new int[positions*positions*2 + 4];
-        int[] output;
 
         for (int y=0; y<positions; y++) {
             for (int x=0; x<positions; x++) {
@@ -53,6 +51,14 @@ public class Utils {
         input[input.length-3] = right ? 1 : 0;
         input[input.length-2] = down ? 1 : 0;
         input[input.length-1] = left ? 1 : 0;
+
+        return input;
+
+    }
+
+    public static int[] generateOutput(boolean up, boolean right, boolean down, boolean left, int action) {
+
+        int[] output;
 
         if (action == KeyEvent.VK_UP) {
             if (up) {
@@ -83,6 +89,19 @@ public class Utils {
         } else {
             output = new int[] {0, 0, 0, 0, 0};
         }
+
+        return output;
+
+    }
+
+    public static void addExample(int positions, int blockSize, int appleX, int appleY,
+                                  int[] snakeX, int[] snakeY, int snakeLen,
+                                  boolean up, boolean right, boolean down, boolean left,
+                                  int action) {
+
+        int[] input = generateInput(positions, blockSize, appleX, appleY,
+                snakeX, snakeY, snakeLen, up, right, down, left);
+        int[] output = generateOutput(up, right, down, left, action);
 
         Example e = new Example(input, output);
         System.out.println(e);

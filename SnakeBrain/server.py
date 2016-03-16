@@ -56,36 +56,36 @@ def printResults(X, yHat, xNorm, yNorm):
 ###########################################
 
 # Hyperparameters
-inputLayerSize = 2
-outputLayerSize = 1
-hiddenLayerSize = [3, 3]
+inputLayerSize = 1804
+outputLayerSize = 5
+hiddenLayerSize = [30]
 
 # Regularization
 lambd = 0.0001
 
 # Configure activation function
-useAct = "softRelu"
-xNorm = [50, 50]
-yNorm = 50
+useAct = "relu"
+#xNorm = [1, 1]
+#yNorm = 1
 
 net = nn.NeuralNetwork(inputLayerSize, outputLayerSize, hiddenLayerSize, lambd, useAct)
 
 # Generate Training Set For Multiplication with (Soft) ReLU
 
 # Training set generation parameters
-n = 100
-yMax = 1000
-maxNoise = 10
+# n = 100
+# yMax = 1000
+# maxNoise = 10
+#
+# xMin = math.ceil(maxNoise ** 0.5)
+# xMax = math.floor((yMax - maxNoise) ** 0.5)
+#
+# X, y = generateTrainingSet(n, xMin, xMax, yMax, maxNoise)
 
-xMin = math.ceil(maxNoise ** 0.5)
-xMax = math.floor((yMax - maxNoise) ** 0.5)
+#X = X / xNorm
+#y = y / yNorm
 
-X, y = generateTrainingSet(n, xMin, xMax, yMax, maxNoise)
-
-X = X / xNorm
-y = y / yNorm
-
-train(net, X, y)
+# train(net, X, y)
 
 
 #########################################
@@ -96,8 +96,7 @@ train(net, X, y)
 def forward():
     json = request.get_json()
     X = np.array(json['X'], dtype=float)
-    X = X / xNorm
-    yHat = net.forward(X) * yNorm
+    yHat = net.forward(X)
     return jsonify({'yHat': yHat.tolist()})
 
 if __name__ == "__main__":

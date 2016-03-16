@@ -2,8 +2,6 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +15,7 @@ import java.util.Arrays;
 public class Snake extends JPanel implements ActionListener{
 
     public static final String SERVER_URL = "http://127.0.0.1:5000";
+    public static final boolean IS_TRAINING = false;
 
     //variables for Window
     private final static int W_HEIGHT = 700;
@@ -139,24 +138,27 @@ public class Snake extends JPanel implements ActionListener{
                 }
             }
 
-            // Test server connection
-            testServerConnection();
+            // Normal game mode
+            //Thread.sleep(DELAY);
 
-            // For auto-forward games
-            Thread.sleep(DELAY);
-
-            // For manual-move games
-            /*isWaitingForInput = true;
-            while(gameCont && isWaitingForInput) {
+            // AI game mode
+            if (IS_TRAINING) {
+                isWaitingForInput = true;
+                while(gameCont && isWaitingForInput) {
+                    Thread.sleep(DELAY);
+                }
+            } else {
+                int action = getNextAction();
                 Thread.sleep(DELAY);
-            }*/
-
-            // For AI-move games
+                simulateKeyPress(action);
+            }
 
         }
 
         // Save training examples
-        Utils.exportExamples();
+        if (IS_TRAINING) {
+            Utils.exportExamples();
+        }
 
         // display end game
         snake.repaint();
@@ -171,20 +173,64 @@ public class Snake extends JPanel implements ActionListener{
             {9, 9}
     };
 
-    private static void testServerConnection() {
+    private static int getNextAction() {
 
         try {
 
+            int[][] input = new int[][] {
+                    Utils.generateInput(POSITIONS, BLOCKSIZE, appleX, appleY, x, y, snakeLen, up, right, down, left)
+            };
+
             HttpResponse<JsonNode> jsonResponse = Unirest.post(SERVER_URL + "/forward")
                     .header("content-type", "application/json")
-                    .body("{\"X\": " + Utils.toJsonString(testX) + "}")
+                    .body("{\"X\": " + Utils.toJsonString(input) + "}")
                     .asJson();
-            JsonNode node = jsonResponse.getBody();
-            JSONObject root = node.getObject();
-            JSONArray jsonArray = root.getJSONArray("yHat");
-            double[][] yHat = Utils.toMatrix(jsonArray);
+
+            double[] yHat = Utils.toMatrix(jsonResponse.getBody().getObject().getJSONArray("yHat"))[0];
+            System.out.println("\nyHat: " + Arrays.toString(yHat));
+
+            int maxIndex = -1;
+            double max = 0;
+
+            for (int i=0; i<yHat.length; i++) {
+                if (yHat[i] > max) {
+                    max = yHat[i];
+                    maxIndex = i;
+                }
+            }
+
+            switch (maxIndex) {
+                case 0:
+                    System.out.println("Action: up");
+                    return KeyEvent.VK_UP;
+                case 1:
+                    System.out.println("Action: right");
+                    return KeyEvent.VK_RIGHT;
+                case 2:
+                    System.out.println("Action: down");
+                    return KeyEvent.VK_DOWN;
+                case 3:
+                    System.out.println("Action: left");
+                    return KeyEvent.VK_LEFT;
+                case 4:
+                default:
+                    System.out.println("Action: continue");
+                    return KeyEvent.VK_SPACE;
+            }
 
         } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+
+        return KeyEvent.VK_SPACE;
+    }
+
+    private static void simulateKeyPress(int action) {
+        try {
+            Robot robot = new Robot();
+            robot.keyPress(action);
+            robot.keyRelease(action);
+        } catch (AWTException e) {
             e.printStackTrace();
         }
     }
@@ -289,7 +335,9 @@ public class Snake extends JPanel implements ActionListener{
                     || (key == KeyEvent.VK_DOWN && !up)
                     || key == KeyEvent.VK_SPACE) {
 
-                Utils.addExample(POSITIONS, BLOCKSIZE, appleX, appleY, x, y, snakeLen, up, right, down, left, key);
+                if (IS_TRAINING) {
+                    Utils.addExample(POSITIONS, BLOCKSIZE, appleX, appleY, x, y, snakeLen, up, right, down, left, key);
+                }
                 isWaitingForInput = false;
 
             }
