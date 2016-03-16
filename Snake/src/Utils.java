@@ -70,65 +70,147 @@ public class Utils {
         return r;
     }
 
+    public static int[] shift(int[] array, int shift) {
+        int len = array.length;
+        int[] shifted = new int[len];
+        for (int i=0; i<len; i++) {
+            int j = (len + i + shift) % len;
+            shifted[j] = array[i];
+        }
+        return shifted;
+    }
+
+    public static int[] getRelativeDist(boolean up, boolean right, boolean down, boolean left, int[] dist) {
+        if (up) {
+            return dist;
+        } else if (right) {
+            return shift(dist, -1);
+        } else if (down) {
+            return shift(dist, 2);
+        } else if (left) {
+            return shift(dist, 1);
+        }
+        return dist;
+    }
+
     public static int[] generateInput(int positions, int blockSize, int appleX, int appleY,
                                       int[] snakeX, int[] snakeY, int snakeLen,
                                       boolean up, boolean right, boolean down, boolean left) {
 
-        int[][] matrix = new int[21][21];
+        int[] input = new int[12];
 
-        int cX = snakeX[0]/blockSize;
-        int cY = snakeY[0]/blockSize;
-        int xMin = cX - 10;
-        int xMax = cX + 10;
-        int yMin = cY - 10;
-        int yMax = cY + 10;
+        int headX = snakeX[0] / blockSize;
+        int headY = snakeY[0] / blockSize;
+        appleX /= blockSize;
+        appleY /= blockSize;
 
-        for (int y=yMin; y<=yMax; y++) {
-            for (int x=xMin; x<=xMax; x++) {
-
-                int i = y - yMin;
-                int j = x - xMin;
-
-                if (x==cX && y==cY) {
-                    continue;
-                }
-
-                if (x<0 || x>=positions || y<0 || y>= positions) {
-                    // You are out of the board
-                    matrix[i][j] = Example.OBSTACLE;
-                }
-
-                for (int z = 0; z < snakeLen; z++) {
-                    if (x == snakeX[z] / blockSize && y == snakeY[z] / blockSize) {
-                        matrix[i][j] = Example.OBSTACLE;
-                    }
-                }
-
-                if (x == appleX / blockSize && y == appleY / blockSize) {
-                    matrix[i][j] = Example.APPLE;
-                }
-
-            }
+        // Distances to apple
+        int[] apple = new int[4];
+        if (appleY < headY) {
+            apple[0] = headY - appleY;
+            apple[2] = 0;
+        } else {
+            apple[0] = 0;
+            apple[2] = appleY - headY;
+        }
+        if (appleX < headX) {
+            apple[1] = 0;
+            apple[3] = headX - appleX;
+        } else {
+            apple[1] = appleX - headX;
+            apple[3] = 0;
         }
 
-        // Rotate it so it is relative
-        // to snake's orientation
-        if (right) {
-            matrix = rotate90CCW(matrix);
-        } else if (down) {
-            matrix = rotate180(matrix);
-        } else if (left) {
-            matrix = rotate90CW(matrix);
-        }
+        // Distances to snake and walls
+        int[] walls = new int[4];
+        boolean upHitWall = false;
+        boolean rightHitWall = false;
+        boolean downHitWall = false;
+        boolean leftHitWall = false;
 
-        // Map it to single vector
-        int[] input = new int[21*21-1];
-        for (int i=0; i<21; i++) {
-            for (int j=0; j<21; j++) {
-                if (!(i == 10 && j == 10)) {
-                    input[getIndex(i, j)] = matrix[i][j];
+        int[] snake = new int[4];
+        boolean upHitSnake = false;
+        boolean rightHitSnake = false;
+        boolean downHitSnake = false;
+        boolean leftHitSnake = false;
+
+        for (int i=1; i<=positions; i++) {
+
+            int testUp = headY - i;
+            int testRight = headX + i;
+            int testDown = headY + i;
+            int testLeft = headX - i;
+
+            // Detect world boundaries
+            if (!upHitWall && (testUp < 0 || testUp >= positions)) {
+                upHitWall = true;
+                walls[0] = i-1;
+            }
+            if (!rightHitWall && (testRight < 0 || testRight >= positions)) {
+                rightHitWall = true;
+                walls[1] = i-1;
+            }
+            if (!downHitWall && (testDown < 0 || testDown >= positions)) {
+                downHitWall = true;
+                walls[2] = i-1;
+            }
+            if (!leftHitWall && (testLeft < 0 || testLeft >= positions)) {
+                leftHitWall = true;
+                walls[3] = i-1;
+            }
+
+            // Detect snake
+            for (int z=0; z<snakeLen; z++) {
+                int x = snakeX[z] / blockSize;
+                int y = snakeY[z] / blockSize;
+                if (!upHitSnake && (headX == x && testUp == y)) {
+                    upHitSnake = true;
+                    snake[0] = i-1;
+                }
+                if (!rightHitSnake && (testRight == x && headY == y)) {
+                    rightHitSnake = true;
+                    snake[1] = i-1;
+                }
+                if (!downHitSnake && (headX == x && testDown == y)) {
+                    downHitSnake = true;
+                    snake[2] = i-1;
+                }
+                if (!leftHitSnake && (testLeft == x && headY == y)) {
+                    leftHitSnake = true;
+                    snake[3] = i-1;
                 }
             }
+
+        }
+
+        if (!upHitSnake) {
+            snake[0] = positions;
+        }
+        if (!rightHitSnake) {
+            snake[1] = positions;
+        }
+        if (!downHitSnake) {
+            snake[2] = positions;
+        }
+        if (!leftHitSnake) {
+            snake[3] = positions;
+        }
+
+        // Get values relative to direction
+        apple = getRelativeDist(up, right, down, left, apple);
+        walls = getRelativeDist(up, right, down, left, walls);
+        snake = getRelativeDist(up, right, down, left, snake);
+
+        for (int i=0; i<apple.length; i++) {
+            input[i] = apple[i];
+        }
+
+        for (int i=0; i<walls.length; i++) {
+            input[4+i] = walls[i];
+        }
+
+        for (int i=0; i<snake.length; i++) {
+            input[8+i] = snake[i];
         }
 
         return input;

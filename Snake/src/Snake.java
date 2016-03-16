@@ -22,8 +22,8 @@ public class Snake extends JPanel implements ActionListener{
     private final static int B_DIMEN = 600;
 
     //game setting
-    private final static int DELAY = 150;
-    private final static int BLOCKSIZE = 40;
+    private final static int DELAY = 300;
+    private final static int BLOCKSIZE = 20;
     private final static int INITLOCIX = 5*BLOCKSIZE;
     private final static int INITLOCIY = 5*BLOCKSIZE;
     private final static int POSITIONS = B_DIMEN/BLOCKSIZE;
@@ -40,7 +40,7 @@ public class Snake extends JPanel implements ActionListener{
     private static boolean gameCont = true;
     private static Integer score = 0;
     private static String sscore;
-    private static int snakeLen = 3;
+    private static int snakeLen = IS_TRAINING ? 5 : 3;
     private static boolean pause = false;
     private static boolean isWaitingForInput = true;
 
@@ -251,10 +251,11 @@ public class Snake extends JPanel implements ActionListener{
         return KeyEvent.VK_SPACE;
     }
 
-    private static void simulateKeyPress(int action) {
+    private static void simulateKeyPress(int action) throws InterruptedException {
         try {
             Robot robot = new Robot();
             robot.keyPress(action);
+            Thread.sleep(50);
             robot.keyRelease(action);
         } catch (AWTException e) {
             e.printStackTrace();
@@ -342,7 +343,10 @@ public class Snake extends JPanel implements ActionListener{
         }
         // if snake hits apple
         if ((x[0] == appleX) && (y[0] == appleY)) {
-            snakeLen++;
+            if (!IS_TRAINING) {
+                // Constant snake length when training
+                snakeLen++;
+            }
             score++;
             spawnApple();
         }

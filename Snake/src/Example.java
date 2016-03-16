@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /**
  * Created by Owner on 3/14/2016.
  */
@@ -7,26 +9,20 @@ public class Example {
     public static final int OBSTACLE = -1;
 
     /**
-     * Describes a 21x21 detection area centered around the snake's head.
-     * Contains 21*21-1=440 elements (center square is always snake
-     * head, so it can be ignored).
+     * input[0]: distance forward until apple. 0 if apple is behind.
+     * input[1]: distance right until apple. 0 if apple is left.
+     * input[2]: distance backwards until apple. 0 if apple is forward.
+     * input[3]: distance left until apple. 0 if apple is right.
      *
-     * Elements are ordered row-major, from left to right then top to bottom.
-     * The orientation of the detection area is relative to the snake's head,
-     * not the game board. Thus, if the snake is facing right, element 0 will
-     * be the top left relative to the snake, which is top right relative to
-     * the board.
+     * input[4]: distance up until wall
+     * input[5]: distance right until wall
+     * input[6]: distance down until wall
+     * input[7]: distance left until wall
      *
-     * Example: assuming the snake is facing right, this is the numbering
-     *
-     *          419 398 ... 021 000
-     *          420 399 ... 022 001
-     *           .   .  .    .   .
-     *           .   . --H-> .   .
-     *           .   .    .  .   .
-     *          438 417 ... 040 019
-     *          439 418 ... 041 020
-     *
+     * input[8] : distance up until snake
+     * input[9] : distance right until snake
+     * input[10]: distance down until snake
+     * input[11]: distance left until snake
      */
     private int[] input;
 
@@ -57,30 +53,13 @@ public class Example {
     @Override
     public String toString() {
 
-        String s = String.format("Action taken: [%d, %d, %d]%n",
+        String s = Arrays.toString(input) + "\n";
+
+        s += String.format("Action taken: [%d, %d, %d]%n",
                 output[0],
                 output[1],
                 output[2]
         );
-
-        for (int i=0; i<21; i++) {
-            String row = "";
-            for (int j=0; j<21; j++) {
-                if (i == 10 && j == 10) {
-                    row += "H ";
-                } else {
-                    int index = Utils.getIndex(i, j);
-                    if (input[index] == APPLE) {
-                        row += "O ";
-                    } else if (input[index] == OBSTACLE) {
-                        row += "X ";
-                    } else {
-                        row += ". ";
-                    }
-                }
-            }
-            s += row + "\n";
-        }
 
         return s;
     }

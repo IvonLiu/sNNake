@@ -9,8 +9,8 @@ def train(net, X, y):
     cost1 = net.costFunction(X, y)
 
     # Begin training. Get smarter!!
-    simpleTrain(net, X, y)
-    #bfgs(net, X, y)
+    #simpleTrain(net, X, y)
+    bfgs(net, X, y)
 
     # Cost after training
     cost2 = net.costFunction(X, y)
@@ -19,7 +19,7 @@ def train(net, X, y):
 
 def simpleTrain(net, X, y):
     scalar = 3
-    for i in range(0, 10000):
+    for i in range(0, 100):
         print("Training iteration {}".format(i))
         dJdW = list(net.costFunctionPrime(X, y))
         for j in range(len(net.W)):
@@ -41,7 +41,7 @@ with open('../TrainingData/active/examples.csv', 'r') as f:
     reader = csv.reader(f)
     examples = np.array(list(reader), dtype=float)
 
-X = examples[:, :440]
+X = examples[:, :12]
 y = examples[:, -3:]
 
 # Hyperparameters
