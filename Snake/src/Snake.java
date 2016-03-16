@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class Snake extends JPanel implements ActionListener{
 
     public static final String SERVER_URL = "http://127.0.0.1:5000";
-    public static final boolean IS_TRAINING = true;
+    public static final boolean IS_TRAINING = false;
 
     //variables for Window
     private final static int W_HEIGHT = 700;
@@ -194,23 +194,54 @@ public class Snake extends JPanel implements ActionListener{
                 }
             }
 
-            switch (maxIndex) {
-                case 0:
-                    System.out.println("Action: up");
-                    return KeyEvent.VK_UP;
-                case 1:
-                    System.out.println("Action: right");
-                    return KeyEvent.VK_RIGHT;
-                case 2:
-                    System.out.println("Action: down");
-                    return KeyEvent.VK_DOWN;
-                case 3:
-                    System.out.println("Action: left");
-                    return KeyEvent.VK_LEFT;
-                case 4:
-                default:
-                    System.out.println("Action: continue");
-                    return KeyEvent.VK_SPACE;
+            if (up) {
+                switch (maxIndex) {
+                    case 0:
+                        System.out.println("Action: left");;
+                        return KeyEvent.VK_LEFT;
+                    case 1:
+                        System.out.println("Action: straight");
+                        return KeyEvent.VK_UP;
+                    case 2:
+                        System.out.println("Action: right");
+                        return KeyEvent.VK_RIGHT;
+                }
+            } else if (right) {
+                switch (maxIndex) {
+                    case 0:
+                        System.out.println("Action: left");;
+                        return KeyEvent.VK_UP;
+                    case 1:
+                        System.out.println("Action: straight");
+                        return KeyEvent.VK_RIGHT;
+                    case 2:
+                        System.out.println("Action: right");
+                        return KeyEvent.VK_DOWN;
+                }
+            } else if (down) {
+                switch (maxIndex) {
+                    case 0:
+                        System.out.println("Action: left");;
+                        return KeyEvent.VK_RIGHT;
+                    case 1:
+                        System.out.println("Action: straight");
+                        return KeyEvent.VK_DOWN;
+                    case 2:
+                        System.out.println("Action: right");
+                        return KeyEvent.VK_LEFT;
+                }
+            } else if (left) {
+                switch (maxIndex) {
+                    case 0:
+                        System.out.println("Action: left");;
+                        return KeyEvent.VK_DOWN;
+                    case 1:
+                        System.out.println("Action: straight");
+                        return KeyEvent.VK_LEFT;
+                    case 2:
+                        System.out.println("Action: right");
+                        return KeyEvent.VK_UP;
+                }
             }
 
         } catch (UnirestException e) {
