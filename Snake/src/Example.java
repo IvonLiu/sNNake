@@ -2,31 +2,50 @@
  * Created by Owner on 3/14/2016.
  */
 public class Example {
+
+    public static final int APPLE = 10;
+    public static final int OBSTACLE = -1;
+
     /**
-     * First position*position*2 elements represent [isSnake, isApple]
-     * where 1 represents true, 0 represents false.
+     * Describes a 21x21 detection area centered around the snake's head.
+     * Contains 21*21-1=440 elements (center square is always snake
+     * head, so it can be ignored).
      *
-     * Ex. [0, 0] is empty, [1, 0] is snake, [0, 1] is apple.
-     *      [1, 1] is impossible and you screwed up.
+     * Elements are ordered row-major, from left to right then top to bottom.
+     * The orientation of the detection area is relative to the snake's head,
+     * not the game board. Thus, if the snake is facing right, element 0 will
+     * be the top left relative to the snake, which is top right relative to
+     * the board.
      *
-     * Last 4 positions represent direction, [up, right, down, left],
-     * where 1 represents the snake is heading in that direction.
+     * Example: assuming the snake is facing right, this is the numbering
      *
-     * Ex. [0, 1, 0, 0] means the snake is heading right.
-     *     If there is not exactly one "1", then again,
-     *     you did something wrong.
+     *          419 398 ... 021 000
+     *          420 399 ... 022 001
+     *           .   .  .    .   .
+     *           .   . --H-> .   .
+     *           .   .    .  .   .
+     *          438 417 ... 040 019
+     *          439 418 ... 041 020
+     *
      */
     private int[] input;
 
     /**
-     * [up, right, down, left, straight]
+     * Represents the action taken, relative to the snake:
+     * [left, straight, right]
      *
-     * Ex. [1, 0, 0, 0, 0] means user hit up arrow,
-     *      [0, 0, 0, 0, 1] means user let snake continue forward,
-     *      [0, 0, 0, 0, 0] means you are bad and screwed up.
+     * 1 means the action was taken, otherwise 0.
      *
-     * If there is more than one "1" then either you are amazing
-     * and hit more than one arrow key at once, or you screwed up.
+     * Example: assuming the snake is facing right,
+     *          [ 1, 0, 0 ] will turn the snake to face up
+     *          [ 0, 1, 0 ] will continue facing right
+     *          [ 0, 0, 1 ] will turn the snake to face down
+     *
+     * In training sets, if there is not exactly one element
+     * with the value 1 and the rest with values 0, then you
+     * screwed up. In testing sets, the three values will
+     * be probabilities and may be any non-negative real value.
+     * The action to be taken will be the maximum of the three.
      */
     private int[] output;
 
@@ -38,43 +57,29 @@ public class Example {
     @Override
     public String toString() {
 
-        String s = String.format("Direction: [%d, %d, %d, %d]%n",
-                input[input.length-4],
-                input[input.length-3],
-                input[input.length-2],
-                input[input.length-1]
-        );
-
-        s += String.format("Action taken: [%d, %d, %d, %d, %d]%n",
+        String s = String.format("Action taken: [%d, %d, %d]%n",
                 output[0],
                 output[1],
-                output[2],
-                output[3],
-                output[4]
+                output[2]
         );
 
-        int positions = (int) Math.pow(input.length / 2, 0.5);
-        for (int y=0; y<positions; y++) {
-
-            String rowStr = "";
-
-            for (int x=0; x<positions; x++) {
-
-                int isSnakeIndex = y*positions*2 + x*2;
-                int isAppleIndex = isSnakeIndex + 1;
-
-                if (input[isSnakeIndex] == 1) {
-                    rowStr += "S ";
-                } else if (input[isAppleIndex] == 1) {
-                    rowStr += "A ";
+        for (int i=0; i<21; i++) {
+            String row = "";
+            for (int j=0; j<21; j++) {
+                if (i == 10 && j == 10) {
+                    row += "H ";
                 } else {
-                    rowStr += ". ";
+                    int index = Utils.getIndex(i, j);
+                    if (input[index] == APPLE) {
+                        row += "O ";
+                    } else if (input[index] == OBSTACLE) {
+                        row += "X ";
+                    } else {
+                        row += ". ";
+                    }
                 }
-
             }
-
-            s += rowStr + "\n";
-
+            s += row + "\n";
         }
 
         return s;

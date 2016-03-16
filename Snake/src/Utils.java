@@ -21,36 +21,115 @@ public class Utils {
 
     private static List<Example> examples = new ArrayList<>();
 
+    /**
+     * Map the i,j th element of the
+     * detection matrix to the nth
+     * element of the input vector.
+     */
+    public static int getIndex(int i, int j) {
+        int index = i * 21 + j;
+        if (i<10 || (i==10 && j<10)) {
+            return index;
+        } else if (i>10 || (i==10 && j>10)) {
+            return index - 1;
+        } else {
+            return -1;
+        }
+    }
+
+    public static int[][] rotate90CW(int[][] m) {
+        int len = m.length;
+        int[][] r = new int[len][len];
+        for (int i=0; i<len; i++) {
+            for (int j=0; j<len; j++) {
+                r[j][len-i-1] = m[i][j];
+            }
+        }
+        return r;
+    }
+
+    public static int[][] rotate90CCW(int[][] m) {
+        int len = m.length;
+        int[][] r = new int[len][len];
+        for (int i=0; i<len; i++) {
+            for (int j=0; j<len; j++) {
+                r[len-j-1][i] = m[i][j];
+            }
+        }
+        return r;
+    }
+
+    public static int[][] rotate180(int[][] m) {
+        int len = m.length;
+        int[][] r = new int[len][len];
+        for (int i=0; i<len; i++) {
+            for (int j=0; j<len; j++) {
+                r[len-i-1][len-j-1] = m[i][j];
+            }
+        }
+        return r;
+    }
+
     public static int[] generateInput(int positions, int blockSize, int appleX, int appleY,
                                       int[] snakeX, int[] snakeY, int snakeLen,
                                       boolean up, boolean right, boolean down, boolean left) {
 
-        int[] input = new int[positions*positions*2 + 4];
+        int[][] matrix = new int[21][21];
 
-        for (int y=0; y<positions; y++) {
-            for (int x=0; x<positions; x++) {
+        int cX = snakeX[0]/blockSize;
+        int cY = snakeY[0]/blockSize;
+        int xMin = cX - 10;
+        int xMax = cX + 10;
+        int yMin = cY - 10;
+        int yMax = cY + 10;
 
-                int isSnakeIndex = y*positions*2 + x*2;
-                int isAppleIndex = isSnakeIndex + 1;
+        for (int y=yMin; y<=yMax; y++) {
+            for (int x=xMin; x<=xMax; x++) {
 
-                for (int z=0; z<snakeLen; z++) {
-                    if (x == snakeX[z]/blockSize && y == snakeY[z]/blockSize) {
-                        input[isSnakeIndex] = 1;
+                int i = y - yMin;
+                int j = x - xMin;
+
+                if (x==cX && y==cY) {
+                    continue;
+                }
+
+                if (x<0 || x>=positions || y<0 || y>= positions) {
+                    // You are out of the board
+                    matrix[i][j] = Example.OBSTACLE;
+                }
+
+                for (int z = 0; z < snakeLen; z++) {
+                    if (x == snakeX[z] / blockSize && y == snakeY[z] / blockSize) {
+                        matrix[i][j] = Example.OBSTACLE;
                     }
                 }
 
-                if (x == appleX/blockSize && y == appleY/blockSize) {
-                    input[isAppleIndex] = 1;
+                if (x == appleX / blockSize && y == appleY / blockSize) {
+                    matrix[i][j] = Example.APPLE;
                 }
 
             }
         }
 
-        // Snake direction
-        input[input.length-4] = up ? 1 : 0;
-        input[input.length-3] = right ? 1 : 0;
-        input[input.length-2] = down ? 1 : 0;
-        input[input.length-1] = left ? 1 : 0;
+        // Rotate it so it is relative
+        // to snake's orientation
+        if (right) {
+            matrix = rotate90CCW(matrix);
+        } else if (down) {
+            matrix = rotate180(matrix);
+        } else if (left) {
+            matrix = rotate90CW(matrix);
+        }
+
+        // Map it to single vector
+        int[] input = new int[21*21-1];
+        for (int i=0; i<21; i++) {
+            for (int j=0; j<21; j++) {
+                if (!(i == 10 && j == 10)) {
+                    input[getIndex(i, j)] = matrix[i][j];
+                }
+            }
+        }
 
         return input;
 
@@ -58,39 +137,45 @@ public class Utils {
 
     public static int[] generateOutput(boolean up, boolean right, boolean down, boolean left, int action) {
 
-        int[] output;
-
-        if (action == KeyEvent.VK_UP) {
-            if (up) {
-                output = new int[]{0, 0, 0, 0, 1};
-            } else {
-                output = new int[]{1, 0, 0, 0, 0};
+        if (up) {
+            switch (action) {
+                case KeyEvent.VK_LEFT:
+                    return new int[] {1, 0, 0};
+                case KeyEvent.VK_UP:
+                    return new int[] {0, 1, 0};
+                case KeyEvent.VK_RIGHT:
+                    return new int[] {0, 0, 1};
             }
-        } else if (action == KeyEvent.VK_RIGHT) {
-            if (right) {
-                output = new int[]{0, 0, 0, 0, 1};
-            } else {
-                output = new int[]{0, 1, 0, 0, 0};
+        } else if (right) {
+            switch (action) {
+                case KeyEvent.VK_UP:
+                    return new int[] {1, 0, 0};
+                case KeyEvent.VK_RIGHT:
+                    return new int[] {0, 1, 0};
+                case KeyEvent.VK_DOWN:
+                    return new int[] {0, 0, 1};
             }
-        } else if (action == KeyEvent.VK_DOWN) {
-            if (down) {
-                output = new int[]{0, 0, 0, 0, 1};
-            } else {
-                output = new int[]{0, 0, 1, 0, 0};
+        } else if (down) {
+            switch (action) {
+                case KeyEvent.VK_RIGHT:
+                    return new int[] {1, 0, 0};
+                case KeyEvent.VK_DOWN:
+                    return new int[] {0, 1, 0};
+                case KeyEvent.VK_LEFT:
+                    return new int[] {0, 0, 1};
             }
-        } else if (action == KeyEvent.VK_LEFT) {
-            if (left) {
-                output = new int[]{0, 0, 0, 0, 1};
-            } else {
-                output = new int[]{0, 0, 0, 1, 0};
+        } else if (left) {
+            switch (action) {
+                case KeyEvent.VK_DOWN:
+                    return new int[] {1, 0, 0};
+                case KeyEvent.VK_LEFT:
+                    return new int[] {0, 1, 0};
+                case KeyEvent.VK_UP:
+                    return new int[] {0, 0, 1};
             }
-        } else if (action == KeyEvent.VK_SPACE) {
-            output = new int[] {0, 0, 0, 0, 1};
-        } else {
-            output = new int[] {0, 0, 0, 0, 0};
         }
 
-        return output;
+        return new int[] {0, 1, 0};
 
     }
 
@@ -116,7 +201,7 @@ public class Utils {
         Path workingDir = Paths.get("");
         Path parentDir = workingDir.toAbsolutePath().getParent();
         Path trainingDir = parentDir.resolve("TrainingData");
-        Path outfilePath = trainingDir.resolve(SAVE_FILE_PREFIX+System.currentTimeMillis()+".csv");
+        Path outfilePath = trainingDir.resolve(SAVE_FILE_PREFIX + System.currentTimeMillis() + ".csv");
 
         List<String> lines = examples.stream().map(Example::toCSV).collect(Collectors.toList());
 

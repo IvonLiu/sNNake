@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class Snake extends JPanel implements ActionListener{
 
     public static final String SERVER_URL = "http://127.0.0.1:5000";
-    public static final boolean IS_TRAINING = false;
+    public static final boolean IS_TRAINING = true;
 
     //variables for Window
     private final static int W_HEIGHT = 700;
@@ -23,9 +23,9 @@ public class Snake extends JPanel implements ActionListener{
 
     //game setting
     private final static int DELAY = 150;
-    private final static int BLOCKSIZE = 20;
-    private final static int INITLOCIX = 100;
-    private final static int INITLOCIY = 100;
+    private final static int BLOCKSIZE = 40;
+    private final static int INITLOCIX = 5*BLOCKSIZE;
+    private final static int INITLOCIY = 5*BLOCKSIZE;
     private final static int POSITIONS = B_DIMEN/BLOCKSIZE;
 
     // for Snake
@@ -153,11 +153,6 @@ public class Snake extends JPanel implements ActionListener{
                 simulateKeyPress(action);
             }
 
-        }
-
-        // Save training examples
-        if (IS_TRAINING) {
-            Utils.exportExamples();
         }
 
         // display end game
@@ -376,6 +371,12 @@ public class Snake extends JPanel implements ActionListener{
                     pause = false;
                 }else{
                     pause = true;
+                }
+            }
+
+            if (key == KeyEvent.VK_E) {
+                if (IS_TRAINING) {
+                    Utils.exportExamples();
                 }
             }
 

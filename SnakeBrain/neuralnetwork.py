@@ -74,7 +74,7 @@ class NeuralNetwork(object):
 
     def costFunction(self, X, y):
         self.yHat = self.forward(X)
-        J = 0.5 * sum((y - self.yHat) ** 2) / X.shape[0]
+        J = 0.5 * np.sum(np.sum((y - self.yHat) ** 2, axis=1)) / X.shape[0]
         reg = 0
         for W in self.W:
             reg = reg + np.sum(W ** 2)
@@ -122,7 +122,7 @@ class NeuralNetwork(object):
         return grad
 
 
-class SnakeCharmer(object):
+class Trainer(object):
     def __init__(self, N):
         # Make Local reference to network:
         self.N = N
