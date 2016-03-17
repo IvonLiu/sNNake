@@ -26,7 +26,7 @@ def train(net, X, y):
 
 def simpleTrain(net, X, y):
     scalar = 3
-    for i in range(0, 100):
+    for i in range(0, 2000):
         print("Training iteration {}".format(i))
         dJdW = list(net.costFunctionPrime(X, y))
         for j in range(len(net.W)):

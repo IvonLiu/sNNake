@@ -1,4 +1,4 @@
-import config_vision1 as cfg
+import config_vision3 as cfg
 
 # Hyperparameters
 inputLayerSize = cfg.inputLayerSize
