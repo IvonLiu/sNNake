@@ -13,8 +13,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 
-import static com.ivon.snnake.Config.SERVER_URL;
-import static com.ivon.snnake.Config.IS_TRAINING;
+import static com.ivon.snnake.Config.*;
 
 @SuppressWarnings("serial")
 public class Snake extends JPanel implements ActionListener{
@@ -29,6 +28,8 @@ public class Snake extends JPanel implements ActionListener{
     private final static int INITLOCIX = 5*BLOCKSIZE;
     private final static int INITLOCIY = 5*BLOCKSIZE;
     private final static int POSITIONS = B_DIMEN/BLOCKSIZE;
+    private static final int MIN_SNAKE_LEN = 3;
+
 
     // for Snake
     private static int x[] = new int[POSITIONS*POSITIONS];
@@ -42,7 +43,7 @@ public class Snake extends JPanel implements ActionListener{
     private static boolean gameCont = true;
     private static Integer score = 0;
     private static String sscore;
-    private static int snakeLen = IS_TRAINING ? 5 : 3;
+    private static int snakeLen = (LOCK_LENGTH >= MIN_SNAKE_LEN) ? LOCK_LENGTH : MIN_SNAKE_LEN;
     private static boolean pause = false;
     private static boolean isWaitingForInput = true;
 
@@ -345,7 +346,7 @@ public class Snake extends JPanel implements ActionListener{
         }
         // if snake hits apple
         if ((x[0] == appleX) && (y[0] == appleY)) {
-            if (!IS_TRAINING) {
+            if (LOCK_LENGTH < MIN_SNAKE_LEN) {
                 // Constant snake length when training
                 snakeLen++;
             }
