@@ -22,7 +22,7 @@ public class Snake extends JPanel implements ActionListener{
     private final static int B_DIMEN = 600;
 
     //game setting
-    private final static int DELAY = 300;
+    private final static int DELAY = 50;
     private final static int BLOCKSIZE = 20;
     private final static int INITLOCIX = 5*BLOCKSIZE;
     private final static int INITLOCIY = 5*BLOCKSIZE;
