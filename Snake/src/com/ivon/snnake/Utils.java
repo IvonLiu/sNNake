@@ -1,3 +1,5 @@
+package com.ivon.snnake;
+
 import org.json.JSONArray;
 
 import java.awt.event.KeyEvent;
@@ -19,21 +21,10 @@ public class Utils {
 
     private static final String SAVE_FILE_PREFIX = "training_";
 
-    private static List<Example> examples = new ArrayList<>();
-
-    /**
-     * Map the i,j th element of the
-     * detection matrix to the nth
-     * element of the input vector.
-     */
-    public static int getIndex(int i, int j) {
-        int index = i * 21 + j;
-        if (i<10 || (i==10 && j<10)) {
-            return index;
-        } else if (i>10 || (i==10 && j>10)) {
-            return index - 1;
-        } else {
-            return -1;
+    private static List<List<Example>> examples = new ArrayList<>(Example.NUM_TYPES);
+    static {
+        for (int i=0; i<Example.NUM_TYPES; i++) {
+            examples.add(new ArrayList<>());
         }
     }
 
@@ -70,70 +61,16 @@ public class Utils {
         return r;
     }
 
-    public static int[] generateInput(int positions, int blockSize, int appleX, int appleY,
-                                      int[] snakeX, int[] snakeY, int snakeLen,
-                                      boolean up, boolean right, boolean down, boolean left) {
-
-        int[][] matrix = new int[21][21];
-
-        int cX = snakeX[0]/blockSize;
-        int cY = snakeY[0]/blockSize;
-        int xMin = cX - 10;
-        int xMax = cX + 10;
-        int yMin = cY - 10;
-        int yMax = cY + 10;
-
-        for (int y=yMin; y<=yMax; y++) {
-            for (int x=xMin; x<=xMax; x++) {
-
-                int i = y - yMin;
-                int j = x - xMin;
-
-                if (x==cX && y==cY) {
-                    continue;
-                }
-
-                if (x<0 || x>=positions || y<0 || y>= positions) {
-                    // You are out of the board
-                    matrix[i][j] = Example.OBSTACLE;
-                }
-
-                for (int z = 0; z < snakeLen; z++) {
-                    if (x == snakeX[z] / blockSize && y == snakeY[z] / blockSize) {
-                        matrix[i][j] = Example.OBSTACLE;
-                    }
-                }
-
-                if (x == appleX / blockSize && y == appleY / blockSize) {
-                    matrix[i][j] = Example.APPLE;
-                }
-
-            }
+    public static int[] shift(int[] array, int shift) {
+        int len = array.length;
+        int[] shifted = new int[len];
+        for (int i=0; i<len; i++) {
+            int j = (len + i + shift) % len;
+            shifted[j] = array[i];
         }
-
-        // Rotate it so it is relative
-        // to snake's orientation
-        if (right) {
-            matrix = rotate90CCW(matrix);
-        } else if (down) {
-            matrix = rotate180(matrix);
-        } else if (left) {
-            matrix = rotate90CW(matrix);
-        }
-
-        // Map it to single vector
-        int[] input = new int[21*21-1];
-        for (int i=0; i<21; i++) {
-            for (int j=0; j<21; j++) {
-                if (!(i == 10 && j == 10)) {
-                    input[getIndex(i, j)] = matrix[i][j];
-                }
-            }
-        }
-
-        return input;
-
+        return shifted;
     }
+
     public static int[] generateOutput(boolean up, boolean right, boolean down, boolean left, int action) {
 
         if (up) {
@@ -182,14 +119,15 @@ public class Utils {
                                   int[] snakeX, int[] snakeY, int snakeLen,
                                   boolean up, boolean right, boolean down, boolean left,
                                   int action) {
+        for (int i=0; i<Example.NUM_TYPES; i++) {
+            int[] input = Example.generateInput(i, positions, blockSize, appleX, appleY,
+                    snakeX, snakeY, snakeLen, up, right, down, left);
+            int[] output = generateOutput(up, right, down, left, action);
 
-        int[] input = generateInput(positions, blockSize, appleX, appleY,
-                snakeX, snakeY, snakeLen, up, right, down, left);
-        int[] output = generateOutput(up, right, down, left, action);
-
-        Example e = new Example(input, output);
-        System.out.println(e);
-        examples.add(e);
+            Example e = Example.newInstance(i, input, output);
+            System.out.println(e);
+            examples.get(i).add(e);
+        }
 
     }
 
@@ -200,17 +138,21 @@ public class Utils {
         Path workingDir = Paths.get("");
         Path parentDir = workingDir.toAbsolutePath().getParent();
         Path trainingDir = parentDir.resolve("TrainingData");
-        Path outfilePath = trainingDir.resolve(SAVE_FILE_PREFIX + System.currentTimeMillis() + ".csv");
+        long now = System.currentTimeMillis();
 
-        List<String> lines = examples.stream().map(Example::toCSV).collect(Collectors.toList());
+        for (int i=0; i<Example.NUM_TYPES; i++) {
+            Path outfilePath = trainingDir.resolve(SAVE_FILE_PREFIX + now + Example.getSaveFileSuffix(i) + ".csv");
 
-        try {
-            File outfile = outfilePath.toFile();
-            System.out.println(outfilePath.toString());
-            outfile.createNewFile();
-            Files.write(outfilePath, lines, Charset.forName("UTF-8"));
-        } catch (IOException e) {
-            e.printStackTrace();
+            List<String> lines = examples.get(i).stream().map(Example::toCSV).collect(Collectors.toList());
+
+            try {
+                File outfile = outfilePath.toFile();
+                System.out.println(outfilePath.toString());
+                outfile.createNewFile();
+                Files.write(outfilePath, lines, Charset.forName("UTF-8"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }

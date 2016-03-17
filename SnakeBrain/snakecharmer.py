@@ -9,13 +9,15 @@ def train(net, X, y):
     cost1 = net.costFunction(X, y)
 
     # Begin training. Get smarter!!
-    #simpleTrain(net, X, y)
-    bfgs(net, X, y)
+    if config.train == "simple":
+        simpleTrain(net, X, y)
+    elif config.train == "bfgs":
+        bfgs(net, X, y)
 
     # Cost after training
     cost2 = net.costFunction(X, y)
 
-    print("Decreased cost by ", cost1 - cost2, ", from ", cost1, " to ", cost2)
+    print("Decreased cost by ", cost1 - cost2, ", from ", cost1, " to ", cost2, "using ", config.train)
 
 def simpleTrain(net, X, y):
     scalar = 3
@@ -37,12 +39,12 @@ Save the tuned weights into an output
 folder once training is complete.
 '''
 
-with open('../TrainingData/active/examples.csv', 'r') as f:
+with open('../TrainingData/active/examples{}.csv'.format(config.suffix), 'r') as f:
     reader = csv.reader(f)
     examples = np.array(list(reader), dtype=float)
 
-X = examples[:, :7]
-y = examples[:, -3:]
+X = examples[:, :config.inputLayerSize]
+y = examples[:, -config.outputLayerSize:]
 
 # Hyperparameters
 inputLayerSize = config.inputLayerSize
@@ -61,4 +63,4 @@ train(net, X, y)
 
 # Save weights to csv
 params = net.getParams()
-np.savetxt('../Parameters/active/weights.csv', params, delimiter=",", fmt='%s')
+np.savetxt('../Parameters/active/weights{}.csv'.format(config.suffix), params, delimiter=",", fmt='%s')

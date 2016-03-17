@@ -1,3 +1,5 @@
+package com.ivon.snnake;
+
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -11,18 +13,18 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 
+import static com.ivon.snnake.Config.SERVER_URL;
+import static com.ivon.snnake.Config.IS_TRAINING;
+
 @SuppressWarnings("serial")
 public class Snake extends JPanel implements ActionListener{
-
-    public static final String SERVER_URL = "http://127.0.0.1:5000";
-    public static final boolean IS_TRAINING = false;
 
     //variables for Window
     private final static int W_HEIGHT = 700;
     private final static int B_DIMEN = 600;
 
     //game setting
-    private final static int DELAY = 50;
+    private final static int DELAY = 150;
     private final static int BLOCKSIZE = 20;
     private final static int INITLOCIX = 5*BLOCKSIZE;
     private final static int INITLOCIY = 5*BLOCKSIZE;
@@ -173,7 +175,7 @@ public class Snake extends JPanel implements ActionListener{
         try {
 
             int[][] input = new int[][] {
-                    Utils.generateInput(POSITIONS, BLOCKSIZE, appleX, appleY, x, y, snakeLen, up, right, down, left)
+                    Example.generateInput(Config.VISION_TYPE, POSITIONS, BLOCKSIZE, appleX, appleY, x, y, snakeLen, up, right, down, left)
             };
 
             HttpResponse<JsonNode> jsonResponse = Unirest.post(SERVER_URL + "/forward")

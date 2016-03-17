@@ -24,7 +24,7 @@ useAct = config.useAct
 
 net = nn.NeuralNetwork(inputLayerSize, outputLayerSize, hiddenLayerSize, lambd, useAct)
 
-with open('../Parameters/active/weights.csv', 'r') as f:
+with open('../Parameters/active/weights{}.csv'.format(config.suffix), 'r') as f:
     reader = csv.reader(f)
     params = np.array(list(reader), dtype=float)
 
