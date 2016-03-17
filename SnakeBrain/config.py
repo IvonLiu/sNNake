@@ -1,5 +1,5 @@
 # Hyperparameters
-inputLayerSize = 12
+inputLayerSize = 7
 outputLayerSize = 3
 hiddenLayerSize = [8]
 

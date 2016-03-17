@@ -14,15 +14,10 @@ public class Example {
      * input[2]: distance backwards until apple. 0 if apple is forward.
      * input[3]: distance left until apple. 0 if apple is right.
      *
-     * input[4]: distance up until wall
-     * input[5]: distance right until wall
-     * input[6]: distance down until wall
-     * input[7]: distance left until wall
-     *
-     * input[8] : distance up until snake
-     * input[9] : distance right until snake
-     * input[10]: distance down until snake
-     * input[11]: distance left until snake
+     * input[4]: distance left until obstacle
+     * input[5]: distance forward until obstacle
+     * input[7]: distance right until obstacle
+     * Where obstacle = wall or snake
      */
     private int[] input;
 
