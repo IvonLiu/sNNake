@@ -59,3 +59,7 @@ python snakecharmer.py
 * I'm not a snake master. Thus snakes that learn from me are not masters themselves. The included trained parameters will get your snake to a score of around 30, 40 if you're lucky, and 50 if you're really lucky.
 
 * If you have trained this snake to do better, please submit a pull request :)
+
+## Credits
+
+Special thanks to [wollip](https://github.com/wollip) for creating the [snake](https://github.com/wollip/snake) game this project is based off of.
