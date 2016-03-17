@@ -2,7 +2,12 @@ import numpy as np
 import neuralnetwork as nn
 import config
 import csv
+import time
 
+
+def currentTimeMillis():
+    millis = int(round(time.time() * 1000))
+    return millis
 
 def train(net, X, y):
     # Cost before training
@@ -63,4 +68,4 @@ train(net, X, y)
 
 # Save weights to csv
 params = net.getParams()
-np.savetxt('../Parameters/active/weights{}.csv'.format(config.suffix), params, delimiter=",", fmt='%s')
+np.savetxt('../Parameters/weights_{}{}.csv'.format(currentTimeMillis(), config.suffix), params, delimiter=",", fmt='%s')
