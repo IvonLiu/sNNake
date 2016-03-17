@@ -152,8 +152,9 @@ public class Snake extends JPanel implements ActionListener{
                 }
             } else {
                 int action = getNextAction();
-                Thread.sleep(DELAY);
+                Thread.sleep(DELAY/2);
                 simulateKeyPress(action);
+                Thread.sleep(DELAY/2);
             }
 
         }
