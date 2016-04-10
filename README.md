@@ -60,7 +60,7 @@ python snakecharmer.py
 
 * If you have trained this snake to do better, please submit a pull request :)
 
-* The snake's name is Ann. Not Anne. Not Annie. Don't ask why. Just remember what it uses for a brain.
+* The snake's name is Ann. Ann A. Conda. Not Anne. Not Annie. Don't ask why. Just remember what it uses for a brain.
 
 ## Credits
 
